@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- スマホで画面幅に合わせて表示するための指定 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>タスク管理</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="app-header">
+    <h1>タスク管理</h1>
+    <p class="note">※ダミーデータのみ。データはこのブラウザの中だけに保存されます。</p>
+  </header>
+
+  <main>
+    <!-- ========== ① 一覧画面（FileMaker のリスト形式レイアウトに相当） ========== -->
+    <section id="list-view">
+      <div class="toolbar">
+        <button type="button" id="btn-new" class="btn btn-primary">＋ 新規登録</button>
+        <label class="filter">
+          ステータス
+          <select id="filter-status">
+            <option value="">すべて</option>
+            <option value="未着手">未着手</option>
+            <option value="進行中">進行中</option>
+            <option value="完了">完了</option>
+          </select>
+        </label>
+      </div>
+
+      <p id="count" class="count"></p>
+
+      <table class="task-table">
+        <thead>
+          <tr>
+            <th>タイトル</th>
+            <th>期限日</th>
+            <th>優先度</th>
+            <th>ステータス</th>
+            <th>更新日時</th>
+          </tr>
+        </thead>
+        <tbody id="task-rows"></tbody>
+      </table>
+
+      <p id="empty" class="empty" hidden>該当するタスクはありません。</p>
+
+      <div class="footer-tools">
+        <button type="button" id="btn-reset" class="btn btn-link">ダミーデータに戻す</button>
+      </div>
+    </section>
+
+    <!-- ========== ② 登録・編集画面（FileMaker のフォーム形式レイアウトに相当） ========== -->
+    <section id="form-view" hidden>
+      <h2 id="form-title">新規登録</h2>
+      <form id="task-form" novalidate>
+        <input type="hidden" id="f-id">
+
+        <div class="field">
+          <label for="f-title">タイトル <span class="required">必須</span></label>
+          <input type="text" id="f-title" maxlength="100" required>
+          <p class="error" id="err-title" hidden>タイトルを入力してください。</p>
+        </div>
+
+        <div class="field">
+          <label for="f-memo">内容</label>
+          <textarea id="f-memo" rows="4"></textarea>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="f-due">期限日</label>
+            <input type="date" id="f-due">
+          </div>
+          <div class="field">
+            <label for="f-priority">優先度</label>
+            <select id="f-priority">
+              <option value="高">高</option>
+              <option value="中">中</option>
+              <option value="低">低</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="f-status">ステータス</label>
+            <select id="f-status">
+              <option value="未着手">未着手</option>
+              <option value="進行中">進行中</option>
+              <option value="完了">完了</option>
+            </select>
+          </div>
+        </div>
+
+        <p class="meta" id="f-meta"></p>
+
+        <div class="form-buttons">
+          <button type="submit" class="btn btn-primary">保存</button>
+          <button type="button" id="btn-cancel" class="btn">キャンセル</button>
+          <button type="button" id="btn-delete" class="btn btn-danger" hidden>削除</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <!-- ========== 削除確認ダイアログ（FileMaker のカスタムダイアログに相当） ========== -->
+  <dialog id="confirm-dialog">
+    <p id="confirm-message">本当に削除しますか？</p>
+    <div class="form-buttons">
+      <button type="button" id="confirm-ok" class="btn btn-danger">削除する</button>
+      <button type="button" id="confirm-cancel" class="btn">やめる</button>
+    </div>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
