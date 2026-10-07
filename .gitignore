@@ -1,0 +1,13 @@
+# DDR 本体と展開結果は業務データを含むため GitHub に上げない
+DDR/
+split/
+handover/
+*.xml
+
+# Claude Code の個人用設定
+.claude/settings.local.json
+
+# OS が自動で作るファイル
+.DS_Store
+Thumbs.db
+desktop.ini
