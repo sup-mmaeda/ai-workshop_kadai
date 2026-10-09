@@ -170,6 +170,30 @@
       background: var(--surface);
     }
     .toolbar-note { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 12px; }
+    .toolbar-left { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+
+    /* 期限切れアラート（件数があるときは赤で目立たせる） */
+    .overdue-alert {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+    .overdue-alert.has {
+      background: var(--high-soft);
+      border: 1px solid #fecaca;
+      color: var(--danger);
+    }
+    .overdue-alert.has strong { font-size: 15px; }
+    /* 期限切れがないときは控えめに表示 */
+    .overdue-alert.none {
+      background: var(--low-soft);
+      border: 1px solid #a7f3d0;
+      color: var(--low);
+      font-weight: 500;
+    }
 
     /* ===== スマホ用のタブ（PC では非表示） ===== */
     .tabs { display: none; }
@@ -412,14 +436,18 @@
 
   <!-- ========== 操作バー（並び順・注意書き） ========== -->
   <div class="toolbar">
-    <!-- 並べ替え（FileMaker の「レコードのソート」に相当） -->
-    <label class="sort">
-      <i data-lucide="arrow-up-down"></i>並び順
-      <select id="sort-order">
-        <option value="due">期限が近い順</option>
-        <option value="priority">優先度が高い順</option>
-      </select>
-    </label>
+    <div class="toolbar-left">
+      <!-- 並べ替え（FileMaker の「レコードのソート」に相当） -->
+      <label class="sort">
+        <i data-lucide="arrow-up-down"></i>並び順
+        <select id="sort-order">
+          <option value="due">期限が近い順</option>
+          <option value="priority">優先度が高い順</option>
+        </select>
+      </label>
+      <!-- 期限切れ件数のアラート（中身は JavaScript で作る） -->
+      <span id="overdue-alert" class="overdue-alert" role="status"></span>
+    </div>
     <div class="toolbar-note">
       <span>※ダミーデータのみ。データはこのブラウザの中だけに保存されます。</span>
       <button type="button" id="btn-reset" class="btn-link">ダミーデータに戻す</button>
@@ -656,6 +684,19 @@
       // ヘッダーのバッジ：未完了タスク数
       document.getElementById('open-count').textContent =
         tasks.filter((t) => t.status !== '完了').length;
+
+      // 期限切れアラート：期限日が今日より前で、まだ完了していないタスクの件数
+      const overdueCount = tasks.filter((t) => t.due_date && t.due_date < today && t.status !== '完了').length;
+      const alertEl = document.getElementById('overdue-alert');
+      alertEl.innerHTML = '';
+      if (overdueCount > 0) {
+        alertEl.className = 'overdue-alert has';
+        const num = el('strong', '', overdueCount);
+        alertEl.append(icon('triangle-alert'), el('span', '', '期限切れ '), num, el('span', '', ' 件'));
+      } else {
+        alertEl.className = 'overdue-alert none';
+        alertEl.append(icon('circle-check'), el('span', '', '期限切れはありません'));
+      }
 
       boardEl.innerHTML = '';
       tabsEl.innerHTML = '';
