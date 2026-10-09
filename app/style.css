@@ -59,6 +59,7 @@ main {
   align-items: center;
   justify-content: space-between;
 }
+.filters { display: flex; flex-wrap: wrap; gap: 12px; }
 .filter select { font: inherit; padding: 6px; margin-left: 4px; }
 .count { color: var(--muted); font-size: 0.85rem; margin: 12px 0 4px; }
 

@@ -18,15 +18,25 @@
     <section id="list-view">
       <div class="toolbar">
         <button type="button" id="btn-new" class="btn btn-primary">＋ 新規登録</button>
-        <label class="filter">
-          ステータス
-          <select id="filter-status">
-            <option value="">すべて</option>
-            <option value="未着手">未着手</option>
-            <option value="進行中">進行中</option>
-            <option value="完了">完了</option>
-          </select>
-        </label>
+        <div class="filters">
+          <label class="filter">
+            ステータス
+            <select id="filter-status">
+              <option value="">すべて</option>
+              <option value="未着手">未着手</option>
+              <option value="進行中">進行中</option>
+              <option value="完了">完了</option>
+            </select>
+          </label>
+          <!-- 並べ替え（FileMaker の「レコードのソート」に相当） -->
+          <label class="filter">
+            並び順
+            <select id="sort-order">
+              <option value="due">期限が近い順</option>
+              <option value="priority">優先度が高い順</option>
+            </select>
+          </label>
+        </div>
       </div>
 
       <p id="count" class="count"></p>

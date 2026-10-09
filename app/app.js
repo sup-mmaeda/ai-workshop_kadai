@@ -17,6 +17,7 @@ const rowsEl = document.getElementById('task-rows');
 const emptyEl = document.getElementById('empty');
 const countEl = document.getElementById('count');
 const filterEl = document.getElementById('filter-status');
+const sortEl = document.getElementById('sort-order');
 const formEl = document.getElementById('task-form');
 const dialogEl = document.getElementById('confirm-dialog');
 
@@ -110,15 +111,22 @@ function renderList() {
   // 絞り込み（FileMaker の検索に相当）
   const shown = tasks.filter((t) => !filter || t.status === filter);
 
-  // 並べ替え：完了は下へ → 期限日の早い順（未設定は最後）→ 優先度の高い順
+  // 並べ替え（どちらの順でも、完了したタスクは一番下にまとめる）
+  //   期限が近い順  ：期限日の早い順（未設定は最後）→ 同じ日なら優先度の高い順
+  //   優先度が高い順：高 → 中 → 低 → 同じ優先度なら期限日の早い順
+  const byDue = (a, b) => {
+    const dueA = a.due_date || '9999-99-99';
+    const dueB = b.due_date || '9999-99-99';
+    return dueA === dueB ? 0 : dueA < dueB ? -1 : 1;
+  };
+  const byPriority = (a, b) => PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority];
+  const [first, second] = sortEl.value === 'priority' ? [byPriority, byDue] : [byDue, byPriority];
+
   shown.sort((a, b) => {
     const doneA = a.status === '完了' ? 1 : 0;
     const doneB = b.status === '完了' ? 1 : 0;
     if (doneA !== doneB) return doneA - doneB;
-    const dueA = a.due_date || '9999-99-99';
-    const dueB = b.due_date || '9999-99-99';
-    if (dueA !== dueB) return dueA < dueB ? -1 : 1;
-    return PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority];
+    return first(a, b) || second(a, b);
   });
 
   rowsEl.innerHTML = '';
@@ -282,6 +290,7 @@ function showView(name) {
 
 document.getElementById('btn-new').addEventListener('click', () => openForm());
 filterEl.addEventListener('change', renderList);
+sortEl.addEventListener('change', renderList);
 
 // ダミーデータに戻す
 document.getElementById('btn-reset').addEventListener('click', () => {
