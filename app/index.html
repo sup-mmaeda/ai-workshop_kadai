@@ -9,92 +9,450 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="style.css">
+  <!-- アイコン（Lucide Icons / ISC ライセンス）。バージョンを固定して読み込む -->
+  <script src="https://unpkg.com/lucide@1.54.0/dist/umd/lucide.min.js"></script>
+
+  <style>
+    /* ===== 色やサイズの共通設定（ここを変えると全体の見た目が変わる） ===== */
+    :root {
+      --bg: #f8fafc;            /* ベースの背景（薄いグレー） */
+      --surface: #ffffff;       /* カードやヘッダーの背景 */
+      --column: #f1f5f9;        /* 列の背景 */
+      --heading: #0f172a;       /* 見出しの文字色 */
+      --text: #334155;          /* 本文の文字色 */
+      --muted: #64748b;         /* 補足の文字色 */
+      --hairline: #e2e8f0;      /* ごく薄い境界線 */
+      --primary: #4f46e5;       /* アクセント（Indigo） */
+      --primary-hover: #4338ca;
+      --primary-soft: #eef2ff;
+      --danger: #dc2626;
+      --high: #dc2626;  --high-soft: #fef2f2;
+      --mid:  #d97706;  --mid-soft:  #fffbeb;
+      --low:  #059669;  --low-soft:  #ecfdf5;
+      --radius: 12px;
+      --shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
+      --shadow-hover: 0 4px 12px rgba(15, 23, 42, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+    /* hidden（非表示）の指定を、ボタン等の表示指定より優先させる */
+    [hidden] { display: none !important; }
+
+    /* PC では画面の高さぴったりに収め、ページ全体はスクロールさせない */
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Inter", system-ui, -apple-system, "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Lucide のアイコン共通サイズ */
+    svg.lucide { width: 16px; height: 16px; stroke-width: 2; flex-shrink: 0; }
+
+    /* ===== ボタン ===== */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font: inherit;
+      font-weight: 500;
+      padding: 8px 14px;
+      border: 1px solid var(--hairline);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      transition: background-color 0.15s, border-color 0.15s;
+    }
+    .btn:hover { background: var(--bg); }
+    .btn-primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+      box-shadow: 0 1px 2px rgba(79, 70, 229, 0.25);
+    }
+    .btn-primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
+    .btn-danger { color: var(--danger); }
+    .btn-danger:hover { background: var(--high-soft); border-color: #fecaca; }
+    .btn-solid-danger { background: var(--danger); border-color: var(--danger); color: #fff; }
+    .btn-solid-danger:hover { background: #b91c1c; }
+    .btn-link {
+      border: none; background: none; padding: 4px;
+      color: var(--muted); font-size: 12px; text-decoration: underline; cursor: pointer;
+      white-space: nowrap;
+    }
+
+    /* ===== ヘッダー ===== */
+    .app-header {
+      flex-shrink: 0;
+      background: var(--surface);
+      border-bottom: 1px solid var(--hairline);
+    }
+    .header-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 14px 24px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px 24px;
+    }
+    .header-left { display: flex; align-items: center; gap: 10px; }
+    .logo {
+      display: grid; place-items: center;
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      background: var(--primary-soft);
+      color: var(--primary);
+    }
+    .logo svg.lucide { width: 18px; height: 18px; }
+    .app-header h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--heading);
+    }
+    .header-right { display: flex; align-items: center; gap: 20px; }
+    .today {
+      display: inline-flex; align-items: center; gap: 6px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* 件数の丸いバッジ（ヘッダー・列見出し・タブで共通） */
+    .count-badge {
+      display: inline-block;
+      min-width: 22px;
+      height: 22px;
+      padding: 0 7px;
+      border-radius: 999px;
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 22px;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ===== ボード上部の操作バー ===== */
+    .toolbar {
+      flex-shrink: 0;
+      width: 100%;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 14px 24px 0;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px 16px;
+    }
+    .sort {
+      display: inline-flex; align-items: center; gap: 6px;
+      color: var(--muted); font-size: 13px;
+    }
+    .sort select {
+      font: inherit; color: var(--text);
+      padding: 5px 8px;
+      border: 1px solid var(--hairline);
+      border-radius: 8px;
+      background: var(--surface);
+    }
+    .toolbar-note { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 12px; }
+
+    /* ===== スマホ用のタブ（PC では非表示） ===== */
+    .tabs { display: none; }
+
+    /* ===== カンバンボード（3 列） ===== */
+    .board {
+      flex: 1;
+      min-height: 0;            /* 列の中だけをスクロールさせるために必要 */
+      width: 100%;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 14px 24px 20px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .column {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      background: var(--column);
+      border: 1px solid transparent;
+      border-radius: 14px;
+      transition: border-color 0.15s, background-color 0.15s;
+    }
+    /* ドラッグ中のカードが上に来たときの強調 */
+    .column.drag-over { border-color: var(--primary); background: var(--primary-soft); }
+
+    .column-head {
+      display: flex; align-items: center; gap: 8px;
+      padding: 14px 16px 10px;
+    }
+    .column-head h2 { margin: 0; font-size: 14px; font-weight: 600; color: var(--heading); }
+    .column-head .en { color: var(--muted); font-size: 12px; font-weight: 500; }
+    .column-head .count-badge { margin-left: auto; background: var(--surface); color: var(--text); border: 1px solid var(--hairline); }
+    .col-icon-todo { color: var(--muted); }
+    .col-icon-doing { color: var(--primary); }
+    .col-icon-done { color: var(--low); }
+
+    .card-list {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;          /* 件数が多いときは列の中だけスクロール */
+      padding: 2px 12px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .empty {
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      padding: 24px 12px;
+      border: 1.5px dashed #cbd5e1;
+      border-radius: var(--radius);
+      color: #94a3b8;
+      font-size: 12px;
+      text-align: center;
+    }
+
+    /* ===== タスクカード ===== */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 12px 12px 10px;
+      cursor: pointer;
+      transition: box-shadow 0.15s, transform 0.15s;
+    }
+    .card:hover { box-shadow: var(--shadow-hover); }
+    .card.dragging { opacity: 0.4; transform: rotate(1deg); }
+
+    .card-top { display: flex; align-items: flex-start; gap: 6px; }
+    .grip { color: #cbd5e1; cursor: grab; margin-top: 2px; }
+    .card-title {
+      margin: 0;
+      flex: 1;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--heading);
+      word-break: break-word;
+    }
+    .card-memo {
+      margin: 4px 0 0 22px;
+      color: var(--muted);
+      font-size: 12.5px;
+      /* 説明文は 2 行までで省略 */
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .card-bottom {
+      display: flex; align-items: center; gap: 8px;
+      margin: 10px 0 0 22px;
+    }
+    .due {
+      display: inline-flex; align-items: center; gap: 4px;
+      color: var(--muted); font-size: 12px;
+      font-variant-numeric: tabular-nums;
+    }
+    .due svg.lucide { width: 14px; height: 14px; }
+    .due.overdue { color: var(--danger); font-weight: 600; }
+
+    .priority {
+      display: inline-flex; align-items: center; gap: 3px;
+      padding: 1px 8px;
+      border-radius: 999px;
+      font-size: 11.5px;
+      font-weight: 600;
+    }
+    .priority svg.lucide { width: 12px; height: 12px; }
+    .priority.p-高 { background: var(--high-soft); color: var(--high); }
+    .priority.p-中 { background: var(--mid-soft);  color: var(--mid); }
+    .priority.p-低 { background: var(--low-soft);  color: var(--low); }
+
+    /* ステータス移動ボタン（← →） */
+    .move { margin-left: auto; display: flex; gap: 4px; }
+    .move button {
+      display: grid; place-items: center;
+      width: 28px; height: 28px;
+      padding: 0;
+      border: 1px solid var(--hairline);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--muted);
+      cursor: pointer;
+    }
+    .move button:hover { color: var(--primary); border-color: #c7d2fe; background: var(--primary-soft); }
+
+    /* 完了したカードはグレーアウト */
+    .card.done { background: #f8fafc; box-shadow: none; }
+    .card.done .card-title { color: #94a3b8; text-decoration: line-through; }
+    .card.done .card-memo, .card.done .due { color: #94a3b8; }
+    .card.done .priority { opacity: 0.5; }
+
+    /* ===== 登録・編集のモーダル（画面中央に出る小窓） ===== */
+    dialog {
+      border: none;
+      border-radius: 16px;
+      padding: 0;
+      width: 480px;
+      max-width: calc(100vw - 32px);
+      box-shadow: 0 20px 50px rgba(15, 23, 42, 0.2);
+      color: var(--text);
+    }
+    dialog::backdrop { background: rgba(15, 23, 42, 0.4); }
+    .modal-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 20px 6px;
+    }
+    .modal-head h2 { margin: 0; font-size: 16px; color: var(--heading); }
+    .icon-btn {
+      display: grid; place-items: center;
+      width: 32px; height: 32px;
+      border: none; border-radius: 8px;
+      background: none; color: var(--muted); cursor: pointer;
+    }
+    .icon-btn:hover { background: var(--bg); }
+    .modal-body { padding: 8px 20px 4px; }
+    .field { margin-bottom: 14px; flex: 1; }
+    .field label { display: block; font-weight: 600; font-size: 12.5px; color: var(--heading); margin-bottom: 5px; }
+    .field input, .field textarea, .field select {
+      width: 100%;
+      font: inherit;
+      color: var(--text);
+      padding: 8px 10px;
+      border: 1px solid var(--hairline);
+      border-radius: 8px;
+      background: var(--surface);
+    }
+    .field input:focus, .field textarea:focus, .field select:focus {
+      outline: 2px solid #c7d2fe; border-color: var(--primary);
+    }
+    .field-row { display: flex; gap: 12px; }
+    .required { color: var(--danger); font-size: 11px; margin-left: 4px; font-weight: 500; }
+    .error { color: var(--danger); font-size: 12px; margin: 4px 0 0; }
+    .meta { color: var(--muted); font-size: 12px; margin: 0; }
+    .modal-foot {
+      display: flex; align-items: center; gap: 8px;
+      padding: 14px 20px 18px;
+    }
+    .modal-foot .spacer { flex: 1; }
+    .confirm-body { padding: 22px 20px 4px; }
+    .confirm-body p { margin: 0; color: var(--heading); }
+
+    /* ===== スマホ表示（画面幅 768px 以下）：3 列をタブで切り替え ===== */
+    @media (max-width: 768px) {
+      html, body { height: auto; }
+      .header-inner { padding: 12px 16px; }
+      .header-right { width: 100%; justify-content: space-between; }
+      .toolbar { padding: 12px 16px 0; }
+      .toolbar-note { width: 100%; justify-content: space-between; }
+
+      .tabs {
+        display: flex;
+        gap: 4px;
+        margin: 12px 16px 0;
+        padding: 4px;
+        background: var(--column);
+        border-radius: 10px;
+      }
+      .tab {
+        flex: 1;
+        display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+        padding: 8px 4px;
+        border: none;
+        border-radius: 8px;
+        background: none;
+        font: inherit; font-size: 13px; font-weight: 500;
+        color: var(--muted);
+        cursor: pointer;
+      }
+      .tab.active { background: var(--surface); color: var(--heading); box-shadow: var(--shadow); }
+      .tab .count-badge { min-width: 20px; height: 20px; line-height: 20px; font-size: 11px; padding: 0 6px; }
+
+      .board { display: block; padding: 12px 16px 24px; }
+      .column { display: none; background: none; }
+      .column.active { display: flex; }
+      .column-head { display: none; }   /* タブに名前と件数が出るので省略 */
+      .card-list { overflow: visible; padding: 0; }
+      .field-row { flex-direction: column; gap: 0; }
+    }
+  </style>
 </head>
 <body>
+  <!-- ========== ヘッダー ========== -->
   <header class="app-header">
     <div class="header-inner">
-      <!-- 左側：タイトルと未完了タスク数のバッジ -->
       <div class="header-left">
+        <span class="logo"><i data-lucide="square-kanban"></i></span>
         <h1>タスク管理</h1>
         <span id="open-count" class="count-badge" title="未完了のタスク数">0</span>
       </div>
-      <!-- 右側：今日の日付と追加ボタン -->
       <div class="header-right">
-        <time id="today" class="today"></time>
-        <button type="button" id="btn-new" class="btn btn-primary">＋ タスクを追加</button>
+        <span class="today"><i data-lucide="calendar"></i><time id="today"></time></span>
+        <button type="button" id="btn-new" class="btn btn-primary"><i data-lucide="plus"></i>新規タスク追加</button>
       </div>
     </div>
   </header>
 
-  <main>
-    <!-- ========== ① 一覧画面（FileMaker のリスト形式レイアウトに相当） ========== -->
-    <section id="list-view">
-      <div class="toolbar">
-        <div class="filters">
-          <label class="filter">
-            ステータス
-            <select id="filter-status">
-              <option value="">すべて</option>
-              <option value="未着手">未着手</option>
-              <option value="進行中">進行中</option>
-              <option value="完了">完了</option>
-            </select>
-          </label>
-          <!-- 並べ替え（FileMaker の「レコードのソート」に相当） -->
-          <label class="filter">
-            並び順
-            <select id="sort-order">
-              <option value="due">期限が近い順</option>
-              <option value="priority">優先度が高い順</option>
-            </select>
-          </label>
-        </div>
+  <!-- ========== 操作バー（並び順・注意書き） ========== -->
+  <div class="toolbar">
+    <!-- 並べ替え（FileMaker の「レコードのソート」に相当） -->
+    <label class="sort">
+      <i data-lucide="arrow-up-down"></i>並び順
+      <select id="sort-order">
+        <option value="due">期限が近い順</option>
+        <option value="priority">優先度が高い順</option>
+      </select>
+    </label>
+    <div class="toolbar-note">
+      <span>※ダミーデータのみ。データはこのブラウザの中だけに保存されます。</span>
+      <button type="button" id="btn-reset" class="btn-link">ダミーデータに戻す</button>
+    </div>
+  </div>
+
+  <!-- ========== スマホ用タブ ========== -->
+  <nav class="tabs" id="tabs"></nav>
+
+  <!-- ========== カンバンボード（列は JavaScript で作る） ========== -->
+  <main class="board" id="board"></main>
+
+  <!-- ========== 登録・編集モーダル（FileMaker のフォーム形式レイアウトに相当） ========== -->
+  <dialog id="form-dialog">
+    <form id="task-form" novalidate>
+      <div class="modal-head">
+        <h2 id="form-title">新規タスク追加</h2>
+        <button type="button" class="icon-btn" id="btn-close" aria-label="閉じる"><i data-lucide="x"></i></button>
       </div>
-
-      <p id="count" class="count"></p>
-
-      <table class="task-table">
-        <thead>
-          <tr>
-            <th>タイトル</th>
-            <th>期限日</th>
-            <th>優先度</th>
-            <th>ステータス</th>
-            <th>更新日時</th>
-          </tr>
-        </thead>
-        <tbody id="task-rows"></tbody>
-      </table>
-
-      <p id="empty" class="empty" hidden>該当するタスクはありません。</p>
-
-      <div class="footer-tools">
-        <p class="note">※ダミーデータのみ。データはこのブラウザの中だけに保存されます。</p>
-        <button type="button" id="btn-reset" class="btn btn-link">ダミーデータに戻す</button>
-      </div>
-    </section>
-
-    <!-- ========== ② 登録・編集画面（FileMaker のフォーム形式レイアウトに相当） ========== -->
-    <section id="form-view" hidden>
-      <h2 id="form-title">新規登録</h2>
-      <form id="task-form" novalidate>
+      <div class="modal-body">
         <input type="hidden" id="f-id">
-
         <div class="field">
-          <label for="f-title">タイトル <span class="required">必須</span></label>
+          <label for="f-title">タスク名 <span class="required">必須</span></label>
           <input type="text" id="f-title" maxlength="100" required>
-          <p class="error" id="err-title" hidden>タイトルを入力してください。</p>
+          <p class="error" id="err-title" hidden>タスク名を入力してください。</p>
         </div>
-
         <div class="field">
-          <label for="f-memo">内容</label>
-          <textarea id="f-memo" rows="4"></textarea>
+          <label for="f-memo">詳細</label>
+          <textarea id="f-memo" rows="3"></textarea>
         </div>
-
         <div class="field-row">
           <div class="field">
-            <label for="f-due">期限日</label>
+            <label for="f-due">期限</label>
             <input type="date" id="f-due">
           </div>
           <div class="field">
@@ -114,27 +472,434 @@
             </select>
           </div>
         </div>
-
         <p class="meta" id="f-meta"></p>
+      </div>
+      <div class="modal-foot">
+        <button type="button" id="btn-delete" class="btn btn-danger" hidden><i data-lucide="trash-2"></i>削除</button>
+        <span class="spacer"></span>
+        <button type="button" id="btn-cancel" class="btn">キャンセル</button>
+        <button type="submit" class="btn btn-primary">保存</button>
+      </div>
+    </form>
+  </dialog>
 
-        <div class="form-buttons">
-          <button type="submit" class="btn btn-primary">保存</button>
-          <button type="button" id="btn-cancel" class="btn">キャンセル</button>
-          <button type="button" id="btn-delete" class="btn btn-danger" hidden>削除</button>
-        </div>
-      </form>
-    </section>
-  </main>
-
-  <!-- ========== 削除確認ダイアログ（FileMaker のカスタムダイアログに相当） ========== -->
+  <!-- ========== 削除確認（FileMaker のカスタムダイアログに相当） ========== -->
   <dialog id="confirm-dialog">
-    <p id="confirm-message">本当に削除しますか？</p>
-    <div class="form-buttons">
-      <button type="button" id="confirm-ok" class="btn btn-danger">削除する</button>
+    <div class="confirm-body"><p id="confirm-message">本当に削除しますか？</p></div>
+    <div class="modal-foot">
+      <span class="spacer"></span>
       <button type="button" id="confirm-cancel" class="btn">やめる</button>
+      <button type="button" id="confirm-ok" class="btn btn-solid-danger">削除する</button>
     </div>
   </dialog>
 
-  <script src="app.js"></script>
+  <script>
+    // =============================================================
+    // タスク管理アプリ（カンバンボード版）
+    // データはブラウザの localStorage（ブラウザ内の保存領域）に JSON 形式で保存する。
+    // FileMaker で言うと「タスク」テーブル 1 つだけのファイル。
+    // =============================================================
+
+    // 保存領域でのデータの名前（FileMaker のテーブル名のようなもの）
+    const STORAGE_KEY = 'task-app.tasks';
+
+    // 3 つの列の定義（ステータスの値・表示名・アイコン）
+    const COLUMNS = [
+      { status: '未着手', en: 'To Do',       icon: 'circle-dashed',    iconClass: 'col-icon-todo' },
+      { status: '進行中', en: 'In Progress', icon: 'loader',           iconClass: 'col-icon-doing' },
+      { status: '完了',   en: 'Done',        icon: 'circle-check-big', iconClass: 'col-icon-done' },
+    ];
+    const STATUSES = COLUMNS.map((c) => c.status);
+
+    // 優先度の並び順（並べ替えに使う）
+    const PRIORITY_ORDER = { 高: 0, 中: 1, 低: 2 };
+
+    // スマホで表示中のタブ
+    let activeStatus = '未着手';
+
+    // ----- 画面の部品を取得しておく -----
+    const boardEl = document.getElementById('board');
+    const tabsEl = document.getElementById('tabs');
+    const sortEl = document.getElementById('sort-order');
+    const formDialog = document.getElementById('form-dialog');
+    const confirmDialog = document.getElementById('confirm-dialog');
+    const formEl = document.getElementById('task-form');
+
+    const f = {
+      id: document.getElementById('f-id'),
+      title: document.getElementById('f-title'),
+      memo: document.getElementById('f-memo'),
+      due: document.getElementById('f-due'),
+      priority: document.getElementById('f-priority'),
+      status: document.getElementById('f-status'),
+      meta: document.getElementById('f-meta'),
+      errTitle: document.getElementById('err-title'),
+    };
+
+    // =============================================================
+    // データの読み書き
+    // =============================================================
+
+    // 全タスクを読み込む（保存がなければダミーデータを入れる）
+    function loadTasks() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) return JSON.parse(raw);
+      } catch (e) {
+        console.warn('データの読み込みに失敗しました', e);
+      }
+      const dummy = createDummyTasks();
+      saveTasks(dummy);
+      return dummy;
+    }
+
+    // 全タスクを保存する
+    function saveTasks(tasks) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+      } catch (e) {
+        alert('保存に失敗しました。ブラウザの設定（プライベートモード等）を確認してください。');
+      }
+    }
+
+    // タスクID を作る（日時 + 乱数で重複しない値にする。FileMaker のシリアル番号の代わり）
+    function newId() {
+      return 'T' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    }
+
+    // 今日から n 日後の日付を "YYYY-MM-DD" 形式で返す
+    function dateFromToday(n) {
+      const d = new Date();
+      d.setDate(d.getDate() + n);
+      return toDateString(d);
+    }
+
+    function toDateString(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    }
+
+    // ダミーデータ（架空の内容のみ。実在の人名・社名は使わない）
+    function createDummyTasks() {
+      const now = new Date().toISOString();
+      const samples = [
+        ['週次報告書を作成する', '先週分の作業内容をまとめる', -1, '高', '進行中'],
+        ['会議室を予約する', '来週の定例会議用', 2, '中', '未着手'],
+        ['サンプル資料の誤字チェック', '', 5, '低', '未着手'],
+        ['経費精算を提出する', '交通費 3 件分', 0, '高', '未着手'],
+        ['備品の在庫を確認する', 'コピー用紙とトナー', 7, '低', '完了'],
+        ['テスト用データを準備する', 'ダミーの取引先データを 10 件', 3, '中', '進行中'],
+      ];
+      return samples.map(([title, memo, dueOffset, priority, status]) => ({
+        id: newId(),
+        title,
+        memo,
+        due_date: dateFromToday(dueOffset),
+        priority,
+        status,
+        created_at: now,
+        updated_at: now,
+      }));
+    }
+
+    // タスクのステータスを変更して保存する（ドラッグ＆ドロップと ← → ボタンで共通）
+    function moveTask(id, status) {
+      const tasks = loadTasks();
+      const t = tasks.find((x) => x.id === id);
+      if (!t || t.status === status) return;
+      t.status = status;
+      t.updated_at = new Date().toISOString();
+      saveTasks(tasks);
+      render();
+    }
+
+    // =============================================================
+    // 画面の描画
+    // =============================================================
+
+    // 要素を作る小さな道具（textContent を使うので、入力に記号が含まれても安全）
+    function el(tag, className, text) {
+      const e = document.createElement(tag);
+      if (className) e.className = className;
+      if (text !== undefined) e.textContent = text;
+      return e;
+    }
+
+    // Lucide のアイコン要素を作る（あとで lucide.createIcons() が SVG に置き換える）
+    function icon(name) {
+      const i = document.createElement('i');
+      i.dataset.lucide = name;
+      return i;
+    }
+
+    // 並べ替え
+    //   期限が近い順  ：期限日の早い順（未設定は最後）→ 同じ日なら優先度の高い順
+    //   優先度が高い順：高 → 中 → 低 → 同じ優先度なら期限日の早い順
+    function sortTasks(list) {
+      const byDue = (a, b) => {
+        const dueA = a.due_date || '9999-99-99';
+        const dueB = b.due_date || '9999-99-99';
+        return dueA === dueB ? 0 : dueA < dueB ? -1 : 1;
+      };
+      const byPriority = (a, b) => PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority];
+      const [first, second] = sortEl.value === 'priority' ? [byPriority, byDue] : [byDue, byPriority];
+      return list.sort((a, b) => first(a, b) || second(a, b));
+    }
+
+    // 全体を描き直す
+    function render() {
+      const tasks = loadTasks();
+      const today = toDateString(new Date());
+
+      // ヘッダーのバッジ：未完了タスク数
+      document.getElementById('open-count').textContent =
+        tasks.filter((t) => t.status !== '完了').length;
+
+      boardEl.innerHTML = '';
+      tabsEl.innerHTML = '';
+
+      COLUMNS.forEach((col) => {
+        const list = sortTasks(tasks.filter((t) => t.status === col.status));
+
+        // --- スマホ用タブ ---
+        const tab = el('button', 'tab' + (col.status === activeStatus ? ' active' : ''));
+        tab.type = 'button';
+        tab.append(el('span', '', col.status), el('span', 'count-badge', list.length));
+        tab.addEventListener('click', () => { activeStatus = col.status; render(); });
+        tabsEl.append(tab);
+
+        // --- 列 ---
+        const column = el('section', 'column' + (col.status === activeStatus ? ' active' : ''));
+        column.dataset.status = col.status;
+
+        const head = el('div', 'column-head');
+        const ic = icon(col.icon);
+        ic.className = col.iconClass;
+        head.append(ic, el('h2', '', col.status), el('span', 'en', col.en), el('span', 'count-badge', list.length));
+
+        const body = el('div', 'card-list');
+        if (list.length === 0) {
+          const empty = el('div', 'empty');
+          empty.append(icon('inbox'), el('span', '', 'タスクはありません'), el('span', '', 'ここにドラッグして移動できます'));
+          body.append(empty);
+        }
+        list.forEach((t) => body.append(createCard(t, today)));
+
+        column.append(head, body);
+        setupDropZone(column);
+        boardEl.append(column);
+      });
+
+      // <i data-lucide="..."> を SVG アイコンに変換（読み込めなかった場合は何もしない）
+      if (window.lucide) lucide.createIcons();
+    }
+
+    // タスクカードを 1 枚作る
+    function createCard(t, today) {
+      const card = el('article', 'card' + (t.status === '完了' ? ' done' : ''));
+      card.draggable = true;
+      card.dataset.id = t.id;
+
+      // 1 段目：つまみ＋タスク名
+      const top = el('div', 'card-top');
+      const grip = icon('grip-vertical');
+      grip.className = 'grip';
+      top.append(grip, el('h3', 'card-title', t.title));
+      card.append(top);
+
+      // 2 段目：詳細（あれば）
+      if (t.memo) card.append(el('p', 'card-memo', t.memo));
+
+      // 3 段目：期限・優先度・移動ボタン
+      const bottom = el('div', 'card-bottom');
+      if (t.due_date) {
+        const overdue = t.due_date < today && t.status !== '完了';
+        const due = el('span', 'due' + (overdue ? ' overdue' : ''));
+        due.append(icon('calendar'), el('span', '', t.due_date.replaceAll('-', '/').slice(5) + (overdue ? ' 期限切れ' : '')));
+        due.title = '期限：' + t.due_date.replaceAll('-', '/');
+        bottom.append(due);
+      }
+      const pri = el('span', 'priority p-' + t.priority);
+      pri.append(icon('flag'), el('span', '', t.priority));
+      bottom.append(pri);
+
+      const move = el('div', 'move');
+      const idx = STATUSES.indexOf(t.status);
+      if (idx > 0) move.append(moveButton('chevron-left', STATUSES[idx - 1], t.id));
+      if (idx < STATUSES.length - 1) move.append(moveButton('chevron-right', STATUSES[idx + 1], t.id));
+      bottom.append(move);
+      card.append(bottom);
+
+      // カードを押すと編集画面
+      card.addEventListener('click', () => openForm(t.id));
+
+      // ドラッグ開始・終了
+      card.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('text/plain', t.id);
+        e.dataTransfer.effectAllowed = 'move';
+        card.classList.add('dragging');
+      });
+      card.addEventListener('dragend', () => card.classList.remove('dragging'));
+
+      return card;
+    }
+
+    // 「← 前のステータスへ」「次のステータスへ →」ボタン
+    function moveButton(iconName, toStatus, id) {
+      const b = el('button');
+      b.type = 'button';
+      b.title = `「${toStatus}」へ移動`;
+      b.setAttribute('aria-label', b.title);
+      b.append(icon(iconName));
+      b.addEventListener('click', (e) => {
+        e.stopPropagation(); // カードの「押すと編集」を動かさない
+        moveTask(id, toStatus);
+      });
+      return b;
+    }
+
+    // 列をドロップ先にする（カードを離すとその列のステータスになる）
+    function setupDropZone(column) {
+      column.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        column.classList.add('drag-over');
+      });
+      column.addEventListener('dragleave', (e) => {
+        if (!column.contains(e.relatedTarget)) column.classList.remove('drag-over');
+      });
+      column.addEventListener('drop', (e) => {
+        e.preventDefault();
+        column.classList.remove('drag-over');
+        moveTask(e.dataTransfer.getData('text/plain'), column.dataset.status);
+      });
+    }
+
+    // =============================================================
+    // 登録・編集モーダル
+    // =============================================================
+
+    // id を渡すと編集、渡さないと新規登録
+    function openForm(id) {
+      formEl.reset();
+      f.errTitle.hidden = true;
+      const deleteBtn = document.getElementById('btn-delete');
+
+      if (id) {
+        const t = loadTasks().find((x) => x.id === id);
+        if (!t) return;
+        document.getElementById('form-title').textContent = 'タスクを編集';
+        f.id.value = t.id;
+        f.title.value = t.title;
+        f.memo.value = t.memo;
+        f.due.value = t.due_date;
+        f.priority.value = t.priority;
+        f.status.value = t.status;
+        f.meta.textContent = `作成：${formatDateTime(t.created_at)}　更新：${formatDateTime(t.updated_at)}`;
+        deleteBtn.hidden = false;
+      } else {
+        document.getElementById('form-title').textContent = '新規タスク追加';
+        f.id.value = '';
+        f.priority.value = '中';                                        // 初期値
+        f.status.value = window.matchMedia('(max-width: 768px)').matches
+          ? activeStatus : '未着手';                                     // スマホは表示中のタブを初期値に
+        f.meta.textContent = '';
+        deleteBtn.hidden = true;
+      }
+
+      formDialog.showModal();
+      f.title.focus();
+    }
+
+    // 保存された日時 → "2026/10/09 14:30"
+    function formatDateTime(iso) {
+      if (!iso) return '';
+      const d = new Date(iso);
+      const hh = String(d.getHours()).padStart(2, '0');
+      const mm = String(d.getMinutes()).padStart(2, '0');
+      return `${toDateString(d).replaceAll('-', '/')} ${hh}:${mm}`;
+    }
+
+    // 保存ボタン
+    formEl.addEventListener('submit', (e) => {
+      e.preventDefault(); // 画面の再読み込みを止める
+
+      const title = f.title.value.trim();
+      if (!title) {
+        f.errTitle.hidden = false;
+        f.title.focus();
+        return;
+      }
+
+      const tasks = loadTasks();
+      const now = new Date().toISOString();
+      const values = {
+        title,
+        memo: f.memo.value.trim(),
+        due_date: f.due.value,
+        priority: f.priority.value,
+        status: f.status.value,
+        updated_at: now, // 修正タイムスタンプ
+      };
+
+      if (f.id.value) {
+        // 編集：既存レコードを上書き
+        const t = tasks.find((x) => x.id === f.id.value);
+        if (t) Object.assign(t, values);
+      } else {
+        // 新規：レコードを追加
+        tasks.push({ id: newId(), created_at: now, ...values });
+      }
+
+      saveTasks(tasks);
+      activeStatus = values.status; // スマホでは保存したタスクの列を表示
+      formDialog.close();
+      render();
+    });
+
+    // 閉じる・キャンセル
+    document.getElementById('btn-close').addEventListener('click', () => formDialog.close());
+    document.getElementById('btn-cancel').addEventListener('click', () => formDialog.close());
+
+    // 削除ボタン → 確認ダイアログを開く
+    document.getElementById('btn-delete').addEventListener('click', () => {
+      document.getElementById('confirm-message').textContent =
+        `「${f.title.value}」を削除しますか？この操作は元に戻せません。`;
+      confirmDialog.showModal();
+    });
+
+    // 確認ダイアログ：削除する
+    document.getElementById('confirm-ok').addEventListener('click', () => {
+      saveTasks(loadTasks().filter((x) => x.id !== f.id.value));
+      confirmDialog.close();
+      formDialog.close();
+      render();
+    });
+
+    // 確認ダイアログ：やめる
+    document.getElementById('confirm-cancel').addEventListener('click', () => confirmDialog.close());
+
+    // =============================================================
+    // その他のボタン・最初の表示
+    // =============================================================
+
+    document.getElementById('btn-new').addEventListener('click', () => openForm());
+    sortEl.addEventListener('change', render);
+
+    // ダミーデータに戻す
+    document.getElementById('btn-reset').addEventListener('click', () => {
+      if (!confirm('今のデータをすべて消して、ダミーデータに戻しますか？')) return;
+      saveTasks(createDummyTasks());
+      render();
+    });
+
+    // ヘッダーに今日の日付を表示（例：2026.10.09）
+    const todayEl = document.getElementById('today');
+    todayEl.dateTime = toDateString(new Date());
+    todayEl.textContent = todayEl.dateTime.replaceAll('-', '.');
+
+    render();
+  </script>
 </body>
 </html>
