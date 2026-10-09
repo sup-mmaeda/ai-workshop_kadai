@@ -79,8 +79,10 @@ main {
 .task-table tbody tr { cursor: pointer; }
 .task-table tbody tr:hover { background: #f0f5ff; }
 
-/* 完了したタスクは薄く表示 */
-.task-table tr.done .title { text-decoration: line-through; color: var(--muted); }
+/* 完了したタスクはグレーアウト（背景をグレー、文字と色ラベルを薄く） */
+.task-table tr.done { background: #e9ebef; color: var(--muted); }
+.task-table tr.done .badge { opacity: 0.5; }
+.task-table tr.done .title { text-decoration: line-through; }
 /* 期限切れは赤字 */
 .overdue { color: var(--danger); font-weight: bold; }
 
