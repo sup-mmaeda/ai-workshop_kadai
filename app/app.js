@@ -150,6 +150,10 @@ function renderList() {
   });
 
   countEl.textContent = `${shown.length} 件 / 全 ${tasks.length} 件`;
+
+  // ヘッダーのバッジ：絞り込みに関係なく、全体の未完了タスク数を表示
+  document.getElementById('open-count').textContent =
+    tasks.filter((t) => t.status !== '完了').length;
   emptyEl.hidden = shown.length > 0;
 }
 
@@ -298,6 +302,11 @@ document.getElementById('btn-reset').addEventListener('click', () => {
   saveTasks(createDummyTasks());
   renderList();
 });
+
+// ヘッダーに今日の日付を表示（例：2026.10.09）
+const todayEl = document.getElementById('today');
+todayEl.dateTime = toDateString(new Date());
+todayEl.textContent = todayEl.dateTime.replaceAll('-', '.');
 
 // 最初の表示
 showView('list');

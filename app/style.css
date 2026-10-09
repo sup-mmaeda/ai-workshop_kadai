@@ -5,7 +5,10 @@
   --text: #1f2933;
   --muted: #6b7280;
   --border: #d9dde3;
-  --primary: #2563eb;
+  --primary: #4f46e5;        /* Indigo ブルー（ボタン等の基本色） */
+  --primary-hover: #4338ca;
+  --heading: #0f172a;        /* 見出し用のやわらかいダークグレー */
+  --hairline: #eaecf0;       /* ごく薄い境界線 */
   --danger: #dc2626;
   --high: #dc2626;
   --mid: #d97706;
@@ -18,7 +21,7 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: system-ui, -apple-system, "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+  font-family: "Inter", system-ui, -apple-system, "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
   line-height: 1.6;
 }
 
@@ -28,14 +31,54 @@ main {
   padding: 16px;
 }
 
-/* ===== ヘッダー ===== */
+/* ===== ヘッダー（白背景＋下に薄い線のミニマルなデザイン） ===== */
 .app-header {
-  background: var(--primary);
-  color: #fff;
-  padding: 12px 16px;
+  background: #ffffff;
+  border-bottom: 1px solid var(--hairline);
+  position: sticky;   /* 下へスクロールしてもヘッダーを上に固定 */
+  top: 0;
+  z-index: 10;
 }
-.app-header h1 { margin: 0; font-size: 1.3rem; }
-.app-header .note { margin: 4px 0 0; font-size: 0.8rem; opacity: 0.9; }
+.header-inner {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 18px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+}
+.header-left { display: flex; align-items: center; gap: 10px; }
+.app-header h1 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--heading);
+}
+/* 未完了タスク数の丸いバッジ */
+.count-badge {
+  min-width: 24px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: #e0e7ff;
+  color: #4338ca;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 24px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.header-right { display: flex; align-items: center; gap: 20px; }
+.today {
+  color: var(--muted);
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
 
 /* ===== ボタン ===== */
 .btn {
@@ -47,7 +90,17 @@ main {
   color: var(--text);
   cursor: pointer;
 }
-.btn-primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+.btn-primary {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+  font-weight: 500;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+  transition: background-color 0.15s;
+}
+.btn-primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
+.app-header .btn-primary { padding: 8px 16px; font-size: 0.875rem; }
 .btn-danger  { background: var(--danger);  border-color: var(--danger);  color: #fff; }
 .btn-link    { border: none; background: none; color: var(--muted); text-decoration: underline; padding: 4px; }
 
@@ -100,7 +153,15 @@ main {
 .badge.s { background: #e5e7eb; color: var(--text); }
 
 .empty { text-align: center; color: var(--muted); padding: 24px; }
-.footer-tools { text-align: right; margin-top: 12px; }
+.footer-tools {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+.footer-tools .note { margin: 0; color: var(--muted); font-size: 0.8rem; }
 
 /* ===== 登録・編集画面 ===== */
 #form-view {
@@ -144,6 +205,10 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.4); }
 /* ===== スマホ表示（画面幅 640px 以下のとき） =====
    表を「1 件 = 1 枚のカード」に組み替える */
 @media (max-width: 640px) {
+  /* ヘッダー：右側（日付とボタン）を 2 段目に回して、端から端まで使う */
+  .header-inner { padding: 14px 16px; }
+  .header-right { width: 100%; justify-content: space-between; }
+
   .task-table, .task-table tbody, .task-table tr, .task-table td { display: block; }
   .task-table { border: none; background: none; }
   .task-table thead { display: none; }

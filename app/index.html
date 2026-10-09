@@ -5,19 +5,32 @@
   <!-- スマホで画面幅に合わせて表示するための指定 -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>タスク管理</title>
+  <!-- 英数字用のフォント（Inter）。ネットにつながらないときは標準フォントで表示される -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header class="app-header">
-    <h1>タスク管理</h1>
-    <p class="note">※ダミーデータのみ。データはこのブラウザの中だけに保存されます。</p>
+    <div class="header-inner">
+      <!-- 左側：タイトルと未完了タスク数のバッジ -->
+      <div class="header-left">
+        <h1>タスク管理</h1>
+        <span id="open-count" class="count-badge" title="未完了のタスク数">0</span>
+      </div>
+      <!-- 右側：今日の日付と追加ボタン -->
+      <div class="header-right">
+        <time id="today" class="today"></time>
+        <button type="button" id="btn-new" class="btn btn-primary">＋ タスクを追加</button>
+      </div>
+    </div>
   </header>
 
   <main>
     <!-- ========== ① 一覧画面（FileMaker のリスト形式レイアウトに相当） ========== -->
     <section id="list-view">
       <div class="toolbar">
-        <button type="button" id="btn-new" class="btn btn-primary">＋ 新規登録</button>
         <div class="filters">
           <label class="filter">
             ステータス
@@ -57,6 +70,7 @@
       <p id="empty" class="empty" hidden>該当するタスクはありません。</p>
 
       <div class="footer-tools">
+        <p class="note">※ダミーデータのみ。データはこのブラウザの中だけに保存されます。</p>
         <button type="button" id="btn-reset" class="btn btn-link">ダミーデータに戻す</button>
       </div>
     </section>
